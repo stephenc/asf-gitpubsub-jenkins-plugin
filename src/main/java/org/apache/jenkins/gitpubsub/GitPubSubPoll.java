@@ -24,6 +24,7 @@ import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.RequestBuilder;
 import com.ning.http.client.Response;
+import com.ning.http.client.PerRequestConfig;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Util;
@@ -143,10 +144,11 @@ public class GitPubSubPoll extends AsyncPeriodicWork {
         }
         RequestBuilder builder = new RequestBuilder("GET")
                 .setUrl(JsonHandler.GITPUBSUB_URL)
-                .setRequestTimeout(requestRecycleMins == -1
-                        ? -1
-                        : (requestRecycleMins + 1) * 60 * 1000
-                );
+                .setPerRequestConfig(new PerRequestConfig(null,
+                        requestRecycleMins == -1
+                                ? -1
+                                : (requestRecycleMins + 1) * 60 * 1000
+                ));
         if (lastTS != 0) {
             builder.addHeader("X-Fetch-Since", Long.toString(lastTS));
         }
@@ -154,7 +156,7 @@ public class GitPubSubPoll extends AsyncPeriodicWork {
             LOGGER.log(Level.FINE, "Starting AsyncHttpClient instance");
             client = new AsyncHttpClient(
                     new AsyncHttpClientConfig.Builder()
-                            .setAllowPoolingConnections(false)
+                            .setAllowPoolingConnection(false)
                             .setRequestTimeout(
                                     requestRecycleMins == -1
                                     ? -1
